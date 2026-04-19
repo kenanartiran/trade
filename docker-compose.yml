@@ -6,9 +6,10 @@ services:
       - "8000:8000"
     environment:
       APP_USERNAME: trader
-      APP_PASSWORD: change-me
+      APP_PASSWORD: ${APP_PASSWORD:-change-me}
       APP_TOTP_SECRET: JBSWY3DPEHPK3PXP
       APP_ENCRYPTION_KEY: 6vJYVvPKr53fAlhR22O70u14P2AA4CZQk0V7V8sVyi0=
+      APP_CORS_ORIGINS: http://localhost:3000
 
   frontend:
     build:

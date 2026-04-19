@@ -13,7 +13,7 @@ from .models import Position, RiskSettings, Trade
 
 
 def hash_password(password: str, salt: bytes) -> str:
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 200_000)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 600_000)
     return digest.hex()
 
 
@@ -103,5 +103,6 @@ def build_state() -> AppState:
 def get_encryption_key() -> bytes:
     configured = os.getenv("APP_ENCRYPTION_KEY")
     if configured:
+        base64.urlsafe_b64decode(configured)
         return configured.encode("utf-8")
     return base64.urlsafe_b64encode(secrets.token_bytes(32))

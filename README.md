@@ -35,7 +35,7 @@ Default demo TOTP secret in compose: `JBSWY3DPEHPK3PXP`
 ### Backend
 
 ```bash
-cd /home/runner/work/trade/trade/backend
+cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -45,7 +45,7 @@ uvicorn app.main:app --reload --port 8000
 ### Frontend
 
 ```bash
-cd /home/runner/work/trade/trade/frontend
+cd frontend
 cp .env.example .env.local
 npm install
 npm run dev
@@ -54,7 +54,7 @@ npm run dev
 ## Tests
 
 ```bash
-cd /home/runner/work/trade/trade/backend
+cd backend
 python -m pytest -q
 ```
 

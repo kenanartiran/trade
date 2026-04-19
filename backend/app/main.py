@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Annotated
 
 import pyotp
@@ -7,14 +8,15 @@ from cryptography.fernet import Fernet
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models import APIKeyPayload, KillSwitchPayload, LoginRequest, OrderRequest, RiskSettings, Verify2FARequest
+from .models import APIKeyPayload, KillSwitchPayload, LoginRequest, OrderRequest, Position, RiskSettings, Trade, Verify2FARequest
 from .state import AppState, build_state, get_encryption_key
 
 app = FastAPI(title="Trade MVP API", version="0.1.0")
+allowed_origins = [origin.strip() for origin in os.getenv("APP_CORS_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -144,22 +146,34 @@ def mock_trades(_user: str = Depends(current_user)):
 @app.post("/broker/mock/orders")
 def place_mock_order(payload: OrderRequest, _user: str = Depends(current_user)) -> dict[str, str | int]:
     ensure_risk_ok()
+    current_position = next((position for position in state.positions if position.symbol == payload.symbol), None)
 
     if payload.side == "buy":
         state.cash_balance -= payload.price * payload.quantity
+        if current_position:
+            original_quantity = current_position.quantity
+            total_qty = original_quantity + payload.quantity
+            current_position.avg_price = ((current_position.avg_price * original_quantity) + (payload.price * payload.quantity)) / total_qty
+            current_position.quantity = total_qty
+        else:
+            state.positions.append(Position(symbol=payload.symbol, quantity=payload.quantity, avg_price=payload.price))
     else:
         state.cash_balance += payload.price * payload.quantity
+        if current_position:
+            current_position.quantity -= payload.quantity
+            if current_position.quantity <= 0:
+                state.positions = [position for position in state.positions if position.symbol != payload.symbol]
 
     trade_id = len(state.trades) + 1
     state.trades.append(
-        {
-            "trade_id": trade_id,
-            "symbol": payload.symbol,
-            "side": payload.side,
-            "quantity": payload.quantity,
-            "price": payload.price,
-            "pnl": 0.0,
-        }
+        Trade(
+            trade_id=trade_id,
+            symbol=payload.symbol,
+            side=payload.side,
+            quantity=payload.quantity,
+            price=payload.price,
+            pnl=0.0,
+        )
     )
     state.update_peak()
 

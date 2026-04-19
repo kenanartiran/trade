@@ -18,8 +18,8 @@ type DashboardData = {
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 export default function Home() {
-  const [username, setUsername] = useState('trader');
-  const [password, setPassword] = useState('change-me');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [challengeToken, setChallengeToken] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [token, setToken] = useState('');
@@ -74,7 +74,7 @@ export default function Home() {
     if (!authHeader) return;
     const response = await fetch(`${API_URL}/dashboard/summary`, { headers: authHeader });
     if (!response.ok) {
-      setStatus('Dashboard load failed');
+      setStatus(`Dashboard load failed (HTTP ${response.status})`);
       return;
     }
     const data = await response.json();
@@ -91,7 +91,7 @@ export default function Home() {
     });
 
     if (!response.ok) {
-      setStatus('API key save failed');
+      setStatus(`API key save failed (HTTP ${response.status})`);
       return;
     }
 
@@ -124,9 +124,27 @@ export default function Home() {
       {!challengeToken && (
         <form className="grid gap-3 rounded border p-4" onSubmit={login}>
           <h2 className="font-semibold">1) Login</h2>
-          <input className="rounded border p-2" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <label className="text-sm font-medium" htmlFor="username">
+            Username
+          </label>
           <input
+            aria-label="Username"
+            autoComplete="username"
             className="rounded border p-2"
+            id="username"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <label className="text-sm font-medium" htmlFor="password">
+            Password
+          </label>
+          <input
+            aria-label="Password"
+            autoComplete="current-password"
+            className="rounded border p-2"
+            id="password"
+            placeholder="Password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

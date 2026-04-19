@@ -64,3 +64,28 @@ def test_kill_switch_blocks_order_placement():
     assert blocked.json()["detail"] == "Kill switch enabled"
 
     client.post("/risk/kill-switch", json={"enabled": False}, headers=headers)
+
+
+def test_buy_order_updates_positions():
+    headers = _auth_headers()
+    before = client.get("/broker/mock/positions", headers=headers)
+    assert before.status_code == 200
+
+    order = client.post(
+        "/broker/mock/orders",
+        json={
+            "symbol": "NVDA",
+            "side": "buy",
+            "quantity": 1,
+            "price": 100,
+            "stop_loss": 95,
+            "take_profit": 120,
+        },
+        headers=headers,
+    )
+    assert order.status_code == 200
+
+    after = client.get("/broker/mock/positions", headers=headers)
+    assert after.status_code == 200
+    symbols = {position["symbol"] for position in after.json()}
+    assert "NVDA" in symbols
