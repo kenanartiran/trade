@@ -30,6 +30,50 @@ Default demo credentials:
 Default demo TOTP secret in compose: `JBSWY3DPEHPK3PXP`
 (use any authenticator app or generate a code in CLI)
 
+## Beginner Guide: Test UI without Backend
+
+You can test the frontend UI first, without starting the backend.
+
+1. Open Terminal
+2. Go to your cloned project folder (use your own path, not `/home/runner/...`):
+   ```bash
+   cd <YOUR_PATH>/trade/frontend
+   ```
+   Example:
+   ```bash
+   cd ~/trade/frontend
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start frontend:
+   ```bash
+   npm run dev
+   ```
+5. Open `http://localhost:3000`
+
+Important:
+- The page/UI loads.
+- Login, 2FA, and dashboard data need a running backend API.
+
+## Full Test (Recommended)
+
+If you want to test everything (frontend + backend), run:
+
+```bash
+cd <YOUR_PATH>/trade
+docker compose up --build
+```
+
+Then open:
+- Frontend: `http://localhost:3000`
+- Backend docs: `http://localhost:8000/docs`
+
+Demo login:
+- username: `trader`
+- password: `change-me`
+
 ## Local Development (without Docker)
 
 ### Backend
@@ -46,7 +90,6 @@ uvicorn app.main:app --reload --port 8000
 
 ```bash
 cd frontend
-cp .env.example .env.local
 npm install
 npm run dev
 ```
